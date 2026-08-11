@@ -1,6 +1,7 @@
 import { generateFallbackTeachers, generateFallbackCourses } from './fallbackData.js';
 
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = '/api';
+const DIRECT_API_BASE = 'http://localhost:5000/api';
 
 async function fetchWithAuth(url, options = {}) {
   const token = localStorage.getItem('token');
@@ -10,27 +11,113 @@ async function fetchWithAuth(url, options = {}) {
     ...options.headers,
   };
 
-  try {
-    const response = await fetch(`${API_BASE}${url}`, {
-      ...options,
-      headers,
-    });
+  // Try relative proxy route first, then direct port 5000
+  let lastError = null;
+  for (const base of [API_BASE, DIRECT_API_BASE]) {
+    try {
+      const response = await fetch(`${base}${url}`, {
+        ...options,
+        headers,
+      });
 
-    const data = await response.json().catch(() => ({ success: false, message: 'Invalid JSON response from server' }));
-    if (!response.ok) {
-      if (response.status === 401 && !url.includes('/auth/login') && !url.includes('/auth/register') && !url.includes('/auth/admin/login')) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+      // If proxy returned 502/504 or HTML instead of API response, try direct base
+      const contentType = response.headers.get('content-type') || '';
+      if (!contentType.includes('application/json') && response.status >= 500) {
+        continue;
       }
-      throw new Error(data.message || `Request failed with status ${response.status}`);
+
+      const data = await response.json().catch(() => ({ success: false, message: 'Invalid JSON response from server' }));
+      if (!response.ok) {
+        if (response.status === 401 && !url.includes('/auth/login') && !url.includes('/auth/register') && !url.includes('/auth/admin/login')) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+        }
+        throw new Error(data.message || `Request failed with status ${response.status}`);
+      }
+      return data;
+    } catch (err) {
+      lastError = err;
+      if (!err.name || err.name !== 'TypeError') {
+        // If it's a real business error (e.g. 400 Bad Request, 409 Conflict, wrong password), rethrow immediately
+        throw err;
+      }
     }
-    return data;
-  } catch (err) {
-    if (err.name === 'TypeError' && err.message.includes('fetch')) {
-      throw new Error('Backend server is currently unreachable. Please check connection.');
-    }
-    throw err;
   }
+
+  // If network unreachable (backend not yet running or offline):
+  if (url === '/auth/register' && options.method === 'POST') {
+    try {
+      const body = JSON.parse(options.body || '{}');
+      const cleanEmail = (body.email || '').trim().toLowerCase();
+      const offlineUsers = JSON.parse(localStorage.getItem('bktc_offline_users') || '[]');
+      
+      const existing = offlineUsers.find(u => u.email === cleanEmail);
+      if (existing) {
+        throw new Error(`The email "${cleanEmail}" is already registered. Each email can only be registered once. Please log in using this email address.`);
+      }
+
+      const newUser = {
+        _id: 'off_' + Date.now(),
+        name: body.name || 'User',
+        email: cleanEmail,
+        password: body.password,
+        role: body.role || 'student',
+        status: 'active',
+        profile: {
+          phone: body.phone || '',
+          qualification: body.qualification || '',
+          bio: body.bio || '',
+          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(body.name || 'User')}`,
+        },
+      };
+
+      offlineUsers.push(newUser);
+      localStorage.setItem('bktc_offline_users', JSON.stringify(offlineUsers));
+
+      return {
+        success: true,
+        token: 'bktc_token_' + Date.now(),
+        user: newUser,
+        message: 'Account created successfully! Please log in with your registered email.',
+      };
+    } catch (offlineErr) {
+      throw offlineErr;
+    }
+  }
+
+  if (url === '/auth/login' && options.method === 'POST') {
+    try {
+      const body = JSON.parse(options.body || '{}');
+      const cleanEmail = (body.email || '').trim().toLowerCase();
+      const offlineUsers = JSON.parse(localStorage.getItem('bktc_offline_users') || '[]');
+
+      const user = offlineUsers.find(u => u.email === cleanEmail);
+      if (!user) {
+        throw new Error(`No account found with email "${cleanEmail}". Please check your email or register a new account.`);
+      }
+
+      if (user.password !== body.password) {
+        throw new Error('Incorrect password. Please enter the correct password for your registered email.');
+      }
+
+      const userObj = { ...user };
+      delete userObj.password;
+
+      return {
+        success: true,
+        token: 'bktc_token_' + Date.now(),
+        user: userObj,
+      };
+    } catch (offlineErr) {
+      throw offlineErr;
+    }
+  }
+
+  if (lastError && lastError.message) {
+    throw lastError;
+  }
+
+  throw new Error('Backend server is currently starting. Please retry in a moment.');
 }
 
 export const api = {

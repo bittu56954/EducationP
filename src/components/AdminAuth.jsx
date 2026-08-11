@@ -8,33 +8,66 @@ export function AdminAuth({ onSuccess, onSwitchToUserAuth }) {
     email: '',
     password: ''
   });
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [touched, setTouched] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const validate = (data) => {
+    const errors = {};
+    const cleanEmail = (data.email || '').trim();
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!cleanEmail) {
+      errors.email = 'Admin email address is required.';
+    } else if (!emailRegex.test(cleanEmail)) {
+      errors.email = 'Please enter a valid email address (e.g. admin@bkteachingcenter.com).';
+    }
+
+    if (!data.password) {
+      errors.password = 'Password is required.';
+    }
+
+    return errors;
+  };
+
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    const updatedFormData = { ...formData, [name]: value };
+    setFormData(updatedFormData);
     setError('');
+
+    // Real-time validation
+    setTouched(prev => ({ ...prev, [name]: true }));
+    const errors = validate(updatedFormData);
+    setFieldErrors(prev => ({ ...prev, [name]: errors[name] || '' }));
+  };
+
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    setTouched(prev => ({ ...prev, [name]: true }));
+    const errors = validate({ ...formData, [name]: value });
+    setFieldErrors(prev => ({ ...prev, [name]: errors[name] || '' }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    if (!formData.email.trim() || !formData.password.trim()) {
-      setError('All fields are mandatory. Please enter both email and password.');
-      return;
-    }
+    setTouched({ email: true, password: true });
+    const errors = validate(formData);
+    setFieldErrors(errors);
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email.trim())) {
-      setError('Please enter a valid email address.');
+    if (Object.keys(errors).length > 0) {
+      const firstError = Object.values(errors)[0];
+      setError(firstError || 'Please provide valid admin credentials.');
       return;
     }
 
     setLoading(true);
 
     try {
-      await adminLogin(formData.email, formData.password);
+      const cleanEmail = formData.email.trim().toLowerCase();
+      await adminLogin(cleanEmail, formData.password);
       if (onSuccess) onSuccess();
     } catch (err) {
       setError(err.message || 'Admin authentication failed');
@@ -98,11 +131,16 @@ export function AdminAuth({ onSuccess, onSwitchToUserAuth }) {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} onDoubleClick={(e) => e.preventDefault()} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      <form onSubmit={handleSubmit} noValidate onDoubleClick={(e) => e.preventDefault()} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
         <div>
-          <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.35rem', color: 'var(--text-muted)' }}>
-            Admin Email Address *
-          </label>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+            <label style={{ fontSize: '0.85rem', fontWeight: 600, color: (touched.email && fieldErrors.email) ? '#ef4444' : 'var(--text-muted)' }}>
+              Admin Email Address *
+            </label>
+            {formData.email && !fieldErrors.email && (
+              <span style={{ fontSize: '0.75rem', color: '#10b981', fontWeight: 600 }}>✓ Valid Format</span>
+            )}
+          </div>
           <input
             type="email"
             name="email"
@@ -110,13 +148,23 @@ export function AdminAuth({ onSuccess, onSwitchToUserAuth }) {
             placeholder="admin@bkteachingcenter.com"
             value={formData.email}
             onChange={handleChange}
+            onBlur={handleBlur}
+            className={(touched.email && fieldErrors.email) ? 'input-field-error' : ''}
           />
+          {touched.email && fieldErrors.email && (
+            <div className="field-error-msg">
+              <span>⚠️</span>
+              <span>{fieldErrors.email}</span>
+            </div>
+          )}
         </div>
 
         <div>
-          <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.35rem', color: 'var(--text-muted)' }}>
-            Password *
-          </label>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+            <label style={{ fontSize: '0.85rem', fontWeight: 600, color: (touched.password && fieldErrors.password) ? '#ef4444' : 'var(--text-muted)' }}>
+              Password *
+            </label>
+          </div>
           <input
             type="password"
             name="password"
@@ -124,7 +172,15 @@ export function AdminAuth({ onSuccess, onSwitchToUserAuth }) {
             placeholder="••••••••"
             value={formData.password}
             onChange={handleChange}
+            onBlur={handleBlur}
+            className={(touched.password && fieldErrors.password) ? 'input-field-error' : ''}
           />
+          {touched.password && fieldErrors.password && (
+            <div className="field-error-msg">
+              <span>⚠️</span>
+              <span>{fieldErrors.password}</span>
+            </div>
+          )}
         </div>
 
         <button
