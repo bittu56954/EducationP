@@ -1,7 +1,28 @@
 import { generateFallbackTeachers, generateFallbackCourses } from './fallbackData.js';
 
-const API_BASE = '/api';
-const DIRECT_API_BASE = 'http://localhost:5000/api';
+// Resolve API Base URL for both Local Development and Cloud Production (Vercel / Render / Railway)
+const getApiBases = () => {
+  const envUrl = import.meta.env.VITE_API_URL;
+  const bases = [];
+
+  if (envUrl && typeof envUrl === 'string' && envUrl.trim() !== '') {
+    const cleanUrl = envUrl.trim().replace(/\/+$/, '');
+    const apiBase = cleanUrl.endsWith('/api') ? cleanUrl : `${cleanUrl}/api`;
+    bases.push(apiBase);
+  }
+
+  // Relative path (for Vite Proxy locally or Vercel Serverless / rewrites)
+  bases.push('/api');
+
+  // Direct port 5000 fallback (for local development when Vite proxy is not active)
+  if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+    bases.push('http://localhost:5000/api');
+  }
+
+  return bases;
+};
+
+const API_BASES = getApiBases();
 
 async function fetchWithAuth(url, options = {}) {
   const token = localStorage.getItem('token');
@@ -11,18 +32,17 @@ async function fetchWithAuth(url, options = {}) {
     ...options.headers,
   };
 
-  // Try relative proxy route first, then direct port 5000
   let lastError = null;
-  for (const base of [API_BASE, DIRECT_API_BASE]) {
+  for (const base of API_BASES) {
     try {
       const response = await fetch(`${base}${url}`, {
         ...options,
         headers,
       });
 
-      // If proxy returned 502/504 or HTML instead of API response, try direct base
+      // If proxy returned 502/504/404 or HTML (static SPA page) instead of JSON API response, try next base
       const contentType = response.headers.get('content-type') || '';
-      if (!contentType.includes('application/json') && response.status >= 500) {
+      if (!contentType.includes('application/json') && (response.status >= 400 || response.status === 404)) {
         continue;
       }
 
