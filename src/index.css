@@ -785,4 +785,23 @@ input.input-field-error, select.input-field-error, textarea.input-field-error {
   text-shadow: 0 0 12px rgba(59, 130, 246, 0.4);
 }
 
+/* Print Styles for Official Certificates & Receipts */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+  nav, footer, .desktop-nav, .desktop-auth-btns, .mobile-hamburger-btn, .dashboard-layout > aside, button {
+    display: none !important;
+  }
+  #printable-certificate, #printable-hub-certificate, #printable-receipt, #printable-report-card {
+    box-shadow: none !important;
+    border: 6px double #d97706 !important;
+    margin: 0 auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    page-break-inside: avoid !important;
+  }
+}
+
 

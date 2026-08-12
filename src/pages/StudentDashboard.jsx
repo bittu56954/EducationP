@@ -6,6 +6,7 @@ import { ClassCard } from '../components/ClassCard';
 import { CourseDetailModal } from '../components/CourseDetailModal';
 import { CourseStudyHubModal } from '../components/CourseStudyHubModal';
 import { PaymentReceiptModal } from '../components/PaymentReceiptModal';
+import { CertificateModal } from '../components/CertificateModal';
 import { StudentChatView } from '../components/StudentChatView';
 import { StudentTestView } from '../components/StudentTestView';
 import { StudentExamView } from '../components/StudentExamView';
@@ -786,40 +787,13 @@ export function StudentDashboard({ activeTab = 'enrolled', setToast }) {
         user={user}
       />
 
-      {/* Certificate Modal */}
-      <Modal isOpen={Boolean(certificateCourse)} onClose={() => setCertificateCourse(null)} title="Official Certificate of Completion">
-        {certificateCourse && (
-          <div style={{
-            padding: '2rem',
-            background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%)',
-            border: '2px solid var(--primary)',
-            borderRadius: 'var(--radius-md)',
-            textAlign: 'center',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '1.25rem'
-          }}>
-            <div style={{ color: 'var(--primary)', fontWeight: 800, fontSize: '1.3rem', letterSpacing: '0.05em' }}>
-              BK TEACHING CENTER
-            </div>
-            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-              Certificate of Completion
-            </div>
-            <p style={{ fontSize: '0.95rem', color: 'var(--text-muted)' }}>This hereby certifies that</p>
-            <h2 style={{ fontSize: '1.8rem', color: 'var(--text-main)', textDecoration: 'underline var(--secondary)' }}>
-              {user?.name || 'Valued Student'}
-            </h2>
-            <p style={{ fontSize: '0.95rem', color: 'var(--text-muted)' }}>
-              has successfully completed all modules, assignments, and requirements for the accredited course
-            </p>
-            <h3 style={{ fontSize: '1.25rem', color: 'var(--primary)' }}>{certificateCourse.title}</h3>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid var(--border-color)', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-              <span>Issued by: BK TEACHING CENTER Faculty</span>
-              <span>Verification ID: BKTC-{certificateCourse._id}-{Date.now().toString().slice(-6)}</span>
-            </div>
-          </div>
-        )}
-      </Modal>
+      {/* Official Certificate Modal with Bittu Kumar Signature */}
+      <CertificateModal 
+        course={certificateCourse}
+        user={user}
+        isOpen={Boolean(certificateCourse)}
+        onClose={() => setCertificateCourse(null)}
+      />
 
       {/* Payment Receipt Modal */}
       <PaymentReceiptModal 
