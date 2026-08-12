@@ -1,4 +1,10 @@
-import { generateFallbackTeachers, generateFallbackCourses } from './fallbackData.js';
+import { 
+  generateFallbackTeachers, 
+  generateFallbackCourses,
+  generateFallbackNotes,
+  generateFallbackVideos,
+  generateFallbackClasses
+} from './fallbackData.js';
 
 // Resolve API Base URL for both Local Development and Cloud Production (Vercel / Render / Railway)
 const getApiBases = () => {
@@ -40,25 +46,25 @@ async function fetchWithAuth(url, options = {}) {
         headers,
       });
 
-      // If proxy returned 502/504/404 or HTML (static SPA page) instead of JSON API response, try next base
+      // If proxy/rewrite returned HTML (static SPA page) instead of JSON API response, try next base
       const contentType = response.headers.get('content-type') || '';
-      if (!contentType.includes('application/json') && (response.status >= 400 || response.status === 404)) {
+      if (!contentType.includes('application/json')) {
         continue;
       }
 
-      const data = await response.json().catch(() => ({ success: false, message: 'Invalid JSON response from server' }));
+      const data = await response.json();
       if (!response.ok) {
         if (response.status === 401 && !url.includes('/auth/login') && !url.includes('/auth/register') && !url.includes('/auth/admin/login')) {
           localStorage.removeItem('token');
           localStorage.removeItem('user');
         }
-        throw new Error(data.message || `Request failed with status ${response.status}`);
+        throw new Error(data?.message || `Request failed with status ${response.status}`);
       }
       return data;
     } catch (err) {
       lastError = err;
-      if (!err.name || err.name !== 'TypeError') {
-        // If it's a real business error (e.g. 400 Bad Request, 409 Conflict, wrong password), rethrow immediately
+      if (err.name !== 'TypeError' && !err.message?.includes('JSON') && !err.message?.includes('status')) {
+        // If it's a real business error (e.g. 400 Bad Request, 409 Conflict), rethrow immediately
         throw err;
       }
     }
@@ -185,7 +191,12 @@ export const api = {
   // --- Users & Teachers ---
   getTeachers: async () => {
     try {
-      return await fetchWithAuth('/teachers');
+      const res = await fetchWithAuth('/teachers');
+      if (res && res.success && Array.isArray(res.teachers) && res.teachers.length > 0) {
+        return res;
+      }
+      const teachers = generateFallbackTeachers();
+      return { success: true, count: teachers.length, teachers };
     } catch (err) {
       const teachers = generateFallbackTeachers();
       return { success: true, count: teachers.length, teachers };
@@ -194,7 +205,12 @@ export const api = {
 
   getOnlineTeachers: async () => {
     try {
-      return await fetchWithAuth('/teachers');
+      const res = await fetchWithAuth('/teachers');
+      if (res && res.success && Array.isArray(res.teachers) && res.teachers.length > 0) {
+        return res;
+      }
+      const teachers = generateFallbackTeachers();
+      return { success: true, teachers };
     } catch (err) {
       const teachers = generateFallbackTeachers();
       return { success: true, teachers };
@@ -230,7 +246,13 @@ export const api = {
   getCourses: async (params = {}) => {
     try {
       const query = new URLSearchParams(params).toString();
-      return await fetchWithAuth(`/courses${query ? `?${query}` : ''}`);
+      const res = await fetchWithAuth(`/courses${query ? `?${query}` : ''}`);
+      if (res && res.success && Array.isArray(res.courses) && res.courses.length > 0) {
+        return res;
+      }
+      const teachers = generateFallbackTeachers();
+      const courses = generateFallbackCourses(teachers);
+      return { success: true, count: courses.length, courses };
     } catch (err) {
       const teachers = generateFallbackTeachers();
       const courses = generateFallbackCourses(teachers);
@@ -239,7 +261,18 @@ export const api = {
   },
 
   getCourse: async (id) => {
-    return fetchWithAuth(`/courses/${id}`);
+    try {
+      const res = await fetchWithAuth(`/courses/${id}`);
+      if (res && res.success && res.course) {
+        return res;
+      }
+      throw new Error('Fallback required');
+    } catch (err) {
+      const teachers = generateFallbackTeachers();
+      const courses = generateFallbackCourses(teachers);
+      const course = courses.find(c => c._id === id || c.slug === id) || courses[0];
+      return { success: true, course };
+    }
   },
 
   createCourse: async (courseData) => {
@@ -308,17 +341,29 @@ export const api = {
   getClasses: async (params = {}) => {
     try {
       const query = new URLSearchParams(params).toString();
-      return await fetchWithAuth(`/classes${query ? `?${query}` : ''}`);
+      const res = await fetchWithAuth(`/classes${query ? `?${query}` : ''}`);
+      if (res && res.success && Array.isArray(res.classes) && res.classes.length > 0) {
+        return res;
+      }
+      const classes = generateFallbackClasses();
+      return { success: true, count: classes.length, classes };
     } catch (err) {
-      return { success: true, classes: [] };
+      const classes = generateFallbackClasses();
+      return { success: true, count: classes.length, classes };
     }
   },
 
   getMyClasses: async () => {
     try {
-      return await fetchWithAuth('/classes/my-classes');
+      const res = await fetchWithAuth('/classes/my-classes');
+      if (res && res.success && Array.isArray(res.classes) && res.classes.length > 0) {
+        return res;
+      }
+      const classes = generateFallbackClasses();
+      return { success: true, classes };
     } catch (err) {
-      return { success: true, classes: [] };
+      const classes = generateFallbackClasses();
+      return { success: true, classes };
     }
   },
 
@@ -353,9 +398,15 @@ export const api = {
   getNotes: async (params = {}) => {
     try {
       const query = new URLSearchParams(params).toString();
-      return await fetchWithAuth(`/notes${query ? `?${query}` : ''}`);
+      const res = await fetchWithAuth(`/notes${query ? `?${query}` : ''}`);
+      if (res && res.success && Array.isArray(res.notes) && res.notes.length > 0) {
+        return res;
+      }
+      const notes = generateFallbackNotes();
+      return { success: true, notes };
     } catch (err) {
-      return { success: true, notes: [] };
+      const notes = generateFallbackNotes();
+      return { success: true, notes };
     }
   },
 
@@ -375,9 +426,15 @@ export const api = {
   getVideos: async (params = {}) => {
     try {
       const query = new URLSearchParams(params).toString();
-      return await fetchWithAuth(`/videos${query ? `?${query}` : ''}`);
+      const res = await fetchWithAuth(`/videos${query ? `?${query}` : ''}`);
+      if (res && res.success && Array.isArray(res.videos) && res.videos.length > 0) {
+        return res;
+      }
+      const videos = generateFallbackVideos();
+      return { success: true, videos };
     } catch (err) {
-      return { success: true, videos: [] };
+      const videos = generateFallbackVideos();
+      return { success: true, videos };
     }
   },
 

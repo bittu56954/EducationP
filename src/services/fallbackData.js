@@ -225,5 +225,74 @@ export function getFallbackData() {
     }
   ];
 
-  return { teachers, courses, classes };
+  const notes = [
+    {
+      _id: 'not_1',
+      title: 'Full-Stack MERN Architecture & State Optimization Handbook',
+      subject: 'Web Development',
+      courseTitle: 'Full-Stack Web Development Mastery (MERN)',
+      fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+      pages: 42,
+      fileSize: '4.2 MB',
+      createdAt: new Date().toISOString()
+    },
+    {
+      _id: 'not_2',
+      title: 'Python for Data Science, Scikit-Learn & Math Foundations',
+      subject: 'Data Science & AI',
+      courseTitle: 'Python for Data Science & Machine Learning Bootcamp',
+      fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+      pages: 58,
+      fileSize: '6.8 MB',
+      createdAt: new Date().toISOString()
+    },
+    {
+      _id: 'not_3',
+      title: 'Cloud Native Microservices, Kubernetes & CI/CD Pipelines Guide',
+      subject: 'Cloud & DevOps',
+      courseTitle: 'Cloud Native Microservices Architecture',
+      fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+      pages: 35,
+      fileSize: '3.5 MB',
+      createdAt: new Date().toISOString()
+    }
+  ];
+
+  const videos = [
+    {
+      _id: 'vid_1',
+      title: 'Session 1: React 19 Hooks & Concurrent Rendering Deep-Dive',
+      subject: 'Web Development',
+      courseTitle: 'Full-Stack Web Development Mastery (MERN)',
+      videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
+      duration: '45 mins',
+      thumbnail: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=400&auto=format&fit=crop&q=80',
+      createdAt: new Date().toISOString()
+    },
+    {
+      _id: 'vid_2',
+      title: 'Session 2: Express Serverless Optimization on Vercel & MongoDB Atlas',
+      subject: 'Backend Engineering',
+      courseTitle: 'Next.js 15 & React Server Components Masterclass',
+      videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
+      duration: '52 mins',
+      thumbnail: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400&auto=format&fit=crop&q=80',
+      createdAt: new Date().toISOString()
+    }
+  ];
+
+  return { teachers, courses, classes, notes, videos };
 }
+
+export function generateFallbackNotes() {
+  return getFallbackData().notes;
+}
+
+export function generateFallbackVideos() {
+  return getFallbackData().videos;
+}
+
+export function generateFallbackClasses() {
+  return getFallbackData().classes;
+}
+
