@@ -84,8 +84,8 @@ function MainApp() {
 
   const handleEnrollCourse = (course) => {
     if (!user) {
-      setToast({ message: 'Authentication Required: Please register or log in before purchasing this course.', type: 'danger' });
-      handleOpenAuth('register');
+      setToast({ message: 'Authentication Required: Please log in or register before purchasing this course.', type: 'danger' });
+      handleOpenAuth('login');
       return;
     }
     const courseObj = typeof course === 'object' ? course : { _id: course, title: 'Accredited Course', price: 49 };
@@ -107,8 +107,8 @@ function MainApp() {
 
   const handleOpenDemoModal = () => {
     if (!user) {
-      setToast({ message: 'Authentication Required: Please register or log in before booking a demo class.', type: 'danger' });
-      handleOpenAuth('register');
+      setToast({ message: 'Authentication Required: Please log in or register before booking a demo class.', type: 'danger' });
+      handleOpenAuth('login');
       return;
     }
     setIsDemoModalOpen(true);
@@ -123,8 +123,8 @@ function MainApp() {
         currentView={currentView}
         setCurrentView={(view) => {
           if (view === 'dashboard' && !user) {
-            setToast({ message: 'Dashboard Access Restricted: Please register or log in first.', type: 'danger' });
-            handleOpenAuth('register');
+            setToast({ message: 'Dashboard Access Restricted: Please log in first.', type: 'danger' });
+            handleOpenAuth('login');
             return;
           }
           setCurrentView(view);
@@ -160,14 +160,14 @@ function MainApp() {
                   Dashboard Is Protected
                 </h2>
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginBottom: '2rem', lineHeight: 1.6 }}>
-                  Until you register and log in, the Dashboard is not accessible. Please create a new account or log in to access your classroom, enrolled courses, and grade reports.
+                  Please log in to access your classroom, enrolled courses, and grade reports. If you don't have an account yet, create one in seconds.
                 </p>
                 <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-                  <button onClick={() => handleOpenAuth('register')} className="curious-btn-primary" style={{ padding: '0.8rem 1.6rem', backgroundColor: '#3b82f6', borderColor: '#3b82f6' }}>
-                    Register Account
-                  </button>
-                  <button onClick={() => handleOpenAuth('login')} className="curious-btn-outline" style={{ padding: '0.8rem 1.6rem' }}>
+                  <button onClick={() => handleOpenAuth('login')} className="curious-btn-primary" style={{ padding: '0.8rem 1.6rem', backgroundColor: '#3b82f6', borderColor: '#3b82f6' }}>
                     Login Now
+                  </button>
+                  <button onClick={() => handleOpenAuth('register')} className="curious-btn-outline" style={{ padding: '0.8rem 1.6rem' }}>
+                    Register Account
                   </button>
                   <button onClick={() => handleOpenAuth('admin')} className="curious-btn-outline" style={{ padding: '0.8rem 1.6rem', color: '#f59e0b', borderColor: 'rgba(245,158,11,0.4)' }}>
                     Admin Portal

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { AdminAuth } from '../components/AdminAuth';
 import { GraduationCap, Shield, Users, Sparkles, CheckCircle, Phone, Lock, Mail, UserCheck, AlertCircle } from '../components/Icons';
@@ -23,6 +23,10 @@ export function LoginSignup({ onSuccess, initialMode = 'login', onOpenAdminAuth,
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  useEffect(() => {
+    setIsLogin(initialMode === 'login');
+  }, [initialMode]);
 
   if (showAdminAuth) {
     return (
@@ -169,9 +173,8 @@ export function LoginSignup({ onSuccess, initialMode = 'login', onOpenAdminAuth,
           phone: formData.phone.trim(),
           role
         });
-        setSuccess('Registration successful! Click "Sign In" below to log in with your credentials.');
-        setIsLogin(true);
-        if (onSwitchMode) onSwitchMode('login');
+        setSuccess('Registration successful! You are now logged in.');
+        if (onSuccess) onSuccess();
       }
     } catch (err) {
       setError(err.message || 'Authentication failed');

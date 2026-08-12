@@ -309,7 +309,7 @@ export function AboutPage({ onOpenAuth, setCurrentView }) {
           <button 
             className="curious-btn-outline" 
             style={{ padding: '0.9rem 2rem', fontSize: '1rem', fontWeight: 700, borderColor: '#10b981', color: '#10b981' }} 
-            onClick={() => onOpenAuth ? onOpenAuth('register') : setCurrentView('courses')}
+            onClick={() => onOpenAuth ? onOpenAuth('login') : setCurrentView('courses')}
           >
             🎓 Book Free Demo Class
           </button>
@@ -1048,9 +1048,9 @@ export function AboutPage({ onOpenAuth, setCurrentView }) {
           <button 
             className="btn-secondary" 
             style={{ backgroundColor: '#fff', color: '#ea580c', padding: '0.95rem 2.4rem', fontSize: '1.05rem', fontWeight: 800, boxShadow: '0 8px 20px rgba(0,0,0,0.2)' }} 
-            onClick={() => onOpenAuth ? onOpenAuth('register') : setCurrentView('courses')}
+            onClick={() => onOpenAuth ? onOpenAuth('login') : setCurrentView('courses')}
           >
-            Register Now for Free
+            Get Started / Sign In
           </button>
           <button 
             className="btn-primary" 

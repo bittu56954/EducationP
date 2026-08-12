@@ -54,7 +54,7 @@ export function LandingPage({ onOpenAuth, setCurrentView, user, onEnrollCourse }
 
   const handleOpenDemoModal = (grade = 'Class 10', program = 'Board Tuition') => {
     if (!user) {
-      if (onOpenAuth) onOpenAuth('register');
+      if (onOpenAuth) onOpenAuth('login');
       return;
     }
     setDemoGrade(grade);

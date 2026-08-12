@@ -4,24 +4,41 @@ import { api } from '../services/api';
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    try {
+      const savedUser = localStorage.getItem('bktc_user');
+      return savedUser ? JSON.parse(savedUser) : null;
+    } catch {
+      return null;
+    }
+  });
   const [token, setToken] = useState(localStorage.getItem('token') || null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
     async function checkAuth() {
       if (token) {
         try {
           const res = await api.getMe();
-          setUser(res.user);
+          if (isMounted && res && res.success && res.user) {
+            setUser(res.user);
+            localStorage.setItem('bktc_user', JSON.stringify(res.user));
+          } else if (isMounted && res && res.status === 401) {
+            logout();
+          }
         } catch (err) {
-          console.error('Failed to verify stored token:', err);
-          logout();
+          if (err && err.status === 401) {
+            if (isMounted) logout();
+          } else {
+            console.warn('Network or server cold-start during auth verification; retaining cached session.');
+          }
         }
       }
-      setLoading(false);
+      if (isMounted) setLoading(false);
     }
     checkAuth();
+    return () => { isMounted = false; };
   }, [token]);
 
   const login = async (email, password) => {
@@ -35,7 +52,12 @@ export function AuthProvider({ children }) {
 
   const register = async (userData) => {
     const res = await api.register(userData);
-    // Do not set token or user in local state or localStorage so user is not logged in automatically.
+    if (res && res.token) {
+      localStorage.setItem('token', res.token);
+      if (res.user) localStorage.setItem('bktc_user', JSON.stringify(res.user));
+      setToken(res.token);
+      setUser(res.user);
+    }
     return res;
   };
 
@@ -55,13 +77,17 @@ export function AuthProvider({ children }) {
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('bktc_user');
+    localStorage.removeItem('user');
     setToken(null);
     setUser(null);
   };
 
   const updateProfile = async (profileData) => {
     const res = await api.updateProfile(profileData);
-    setUser(res.user);
+    if (res && res.user) {
+      setUser(res.user);
+      localStorage.setItem('bktc_user', JSON.stringify(res.user));
+    }
     return res;
   };
 

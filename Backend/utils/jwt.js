@@ -18,7 +18,7 @@ function base64UrlDecode(str) {
   return Buffer.from(base64, 'base64').toString('utf8');
 }
 
-export function generateToken(payload, expiresInHours = 24) {
+export function generateToken(payload, expiresInHours = 720) {
   const header = { alg: 'HS256', typ: 'JWT' };
   const now = Math.floor(Date.now() / 1000);
   const expPayload = {

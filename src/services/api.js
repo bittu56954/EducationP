@@ -176,7 +176,7 @@ export const api = {
     try {
       return await fetchWithAuth('/auth/me');
     } catch (err) {
-      return { success: false, user: null };
+      return { success: false, user: null, status: err.status || 500, error: err.message };
     }
   },
 
