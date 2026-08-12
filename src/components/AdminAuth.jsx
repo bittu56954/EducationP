@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Shield } from './Icons';
+import { Shield, Eye, EyeOff } from './Icons';
 
 export function AdminAuth({ onSuccess, onSwitchToUserAuth }) {
   const { adminLogin } = useAuth();
@@ -8,6 +8,7 @@ export function AdminAuth({ onSuccess, onSwitchToUserAuth }) {
     email: '',
     password: ''
   });
+  const [showPassword, setShowPassword] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
   const [touched, setTouched] = useState({});
   const [loading, setLoading] = useState(false);
@@ -20,7 +21,7 @@ export function AdminAuth({ onSuccess, onSwitchToUserAuth }) {
     if (!cleanEmail) {
       errors.email = 'Admin email address is required.';
     } else if (!emailRegex.test(cleanEmail)) {
-      errors.email = 'Please enter a valid email address (e.g. admin@bkteachingcenter.com).';
+      errors.email = 'Please enter a valid email address.';
     }
 
     if (!data.password) {
@@ -101,7 +102,7 @@ export function AdminAuth({ onSuccess, onSwitchToUserAuth }) {
           <Shield size={20} /> Dedicated Admin Portal
         </div>
         <p style={{ fontSize: '0.84rem', color: 'var(--text-muted)', margin: 0, lineHeight: 1.45 }}>
-          Restricted access gate for system administration. Public Admin registration is disabled; only the single pre-configured Administrator can log in.
+          Restricted access gate for system administration. Public registration is disabled; only the authorized administrator can log in.
         </p>
       </div>
 
@@ -115,46 +116,6 @@ export function AdminAuth({ onSuccess, onSwitchToUserAuth }) {
         fontSize: '1.1rem'
       }}>
         Administrator Login
-      </div>
-
-      {/* Official Fixed Administrator Credentials Card */}
-      <div style={{
-        backgroundColor: 'rgba(59, 130, 246, 0.08)',
-        border: '1px dashed rgba(59, 130, 246, 0.35)',
-        borderRadius: 'var(--radius-sm)',
-        padding: '0.85rem 1rem',
-        marginBottom: '1.25rem',
-        fontSize: '0.82rem',
-        color: 'var(--text-muted)'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
-          <span style={{ fontWeight: 800, color: '#3b82f6', fontSize: '0.85rem' }}>
-            🔑 Fixed Administrator Credentials:
-          </span>
-          <button
-            type="button"
-            onClick={() => {
-              setFormData({ email: 'admin@bkteachingcenter.com', password: 'AdminPassword2026!' });
-              setFieldErrors({});
-            }}
-            style={{
-              background: 'rgba(59, 130, 246, 0.2)',
-              border: '1px solid #3b82f6',
-              color: '#60a5fa',
-              borderRadius: '4px',
-              padding: '0.2rem 0.55rem',
-              fontSize: '0.74rem',
-              fontWeight: 700,
-              cursor: 'pointer'
-            }}
-          >
-            ⚡ Auto-Fill
-          </button>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.8rem' }}>
-          <div><strong>User ID / Email:</strong> <code style={{ color: '#f59e0b', backgroundColor: 'rgba(0,0,0,0.2)', padding: '0.1rem 0.35rem', borderRadius: '3px' }}>admin@bkteachingcenter.com</code></div>
-          <div><strong>Password:</strong> <code style={{ color: '#f59e0b', backgroundColor: 'rgba(0,0,0,0.2)', padding: '0.1rem 0.35rem', borderRadius: '3px' }}>AdminPassword2026!</code></div>
-        </div>
       </div>
 
       {error && (
@@ -185,7 +146,7 @@ export function AdminAuth({ onSuccess, onSwitchToUserAuth }) {
             type="email"
             name="email"
             required
-            placeholder="admin@bkteachingcenter.com"
+            placeholder="Enter Admin Email"
             value={formData.email}
             onChange={handleChange}
             onBlur={handleBlur}
@@ -205,16 +166,38 @@ export function AdminAuth({ onSuccess, onSwitchToUserAuth }) {
               Password *
             </label>
           </div>
-          <input
-            type="password"
-            name="password"
-            required
-            placeholder="••••••••"
-            value={formData.password}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            className={(touched.password && fieldErrors.password) ? 'input-field-error' : ''}
-          />
+          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+            <input
+              type={showPassword ? 'text' : 'password'}
+              name="password"
+              required
+              placeholder="••••••••"
+              value={formData.password}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              className={(touched.password && fieldErrors.password) ? 'input-field-error' : ''}
+              style={{ width: '100%', paddingRight: '2.5rem' }}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+              style={{
+                position: 'absolute',
+                right: '0.75rem',
+                background: 'none',
+                border: 'none',
+                color: 'var(--text-muted)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '0.2rem'
+              }}
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
           {touched.password && fieldErrors.password && (
             <div className="field-error-msg">
               <span>⚠️</span>

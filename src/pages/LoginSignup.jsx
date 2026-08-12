@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { AdminAuth } from '../components/AdminAuth';
-import { GraduationCap, Shield, Users, Sparkles, CheckCircle, Phone, Lock, Mail, UserCheck, AlertCircle } from '../components/Icons';
+import { GraduationCap, Shield, Users, Sparkles, CheckCircle, Phone, Lock, Mail, UserCheck, AlertCircle, Eye, EyeOff } from '../components/Icons';
 
 export function LoginSignup({ onSuccess, initialMode = 'login', onOpenAdminAuth, onSwitchMode }) {
   const { login, register } = useAuth();
@@ -20,6 +20,7 @@ export function LoginSignup({ onSuccess, initialMode = 'login', onOpenAdminAuth,
   
   const [fieldErrors, setFieldErrors] = useState({});
   const [touched, setTouched] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -446,16 +447,38 @@ export function LoginSignup({ onSuccess, initialMode = 'login', onOpenAdminAuth,
               </span>
             )}
           </div>
-          <input 
-            type="password" 
-            name="password" 
-            required 
-            placeholder={isLogin ? "Enter Your Password" : "Create a password (min 8 characters)"}
-            value={formData.password} 
-            onChange={handleChange}
-            onBlur={handleBlur}
-            className={(touched.password && fieldErrors.password) ? 'input-field-error' : ''}
-          />
+          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+            <input 
+              type={showPassword ? "text" : "password"} 
+              name="password" 
+              required 
+              placeholder={isLogin ? "Enter Your Password" : "Create a password (min 8 characters)"}
+              value={formData.password} 
+              onChange={handleChange}
+              onBlur={handleBlur}
+              className={(touched.password && fieldErrors.password) ? 'input-field-error' : ''}
+              style={{ width: '100%', paddingRight: '2.5rem' }}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+              style={{
+                position: 'absolute',
+                right: '0.75rem',
+                background: 'none',
+                border: 'none',
+                color: 'var(--text-muted)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '0.2rem'
+              }}
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
           {touched.password && fieldErrors.password && (
             <div className="field-error-msg">
               <span>⚠️</span>
