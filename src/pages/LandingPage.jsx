@@ -39,9 +39,10 @@ export function LandingPage({ onOpenAuth, setCurrentView, user, onEnrollCourse }
           api.getClasses({ status: 'upcoming' }),
           api.getTeachers()
         ]);
-        setCourses(coursesRes.courses || []);
-        setClasses(classesRes.classes || []);
-        setTeachers(teachersRes.users || []);
+        setCourses(coursesRes?.courses || []);
+        setClasses(classesRes?.classes || []);
+        const teacherList = teachersRes?.users || teachersRes?.teachers || [];
+        setTeachers(teacherList);
       } catch (err) {
         console.error('Failed to load landing page data:', err);
       } finally {

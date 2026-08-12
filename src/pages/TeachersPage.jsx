@@ -26,8 +26,9 @@ export function TeachersPage({ onViewCourse }) {
           api.getTeachers(),
           api.getCourses()
         ]);
-        setTeachers(teachersRes.users || []);
-        setCourses(coursesRes.courses || []);
+        const teacherList = teachersRes?.users || teachersRes?.teachers || [];
+        setTeachers(teacherList);
+        setCourses(coursesRes?.courses || []);
       } catch (err) {
         console.error('Error loading teachers page:', err);
       } finally {

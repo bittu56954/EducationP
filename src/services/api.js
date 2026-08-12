@@ -58,13 +58,16 @@ async function fetchWithAuth(url, options = {}) {
           localStorage.removeItem('token');
           localStorage.removeItem('user');
         }
-        throw new Error(data?.message || `Request failed with status ${response.status}`);
+        const error = new Error(data?.message || `Request failed with status ${response.status}`);
+        error.status = response.status;
+        error.data = data;
+        throw error;
       }
       return data;
     } catch (err) {
       lastError = err;
-      if (err.name !== 'TypeError' && !err.message?.includes('JSON') && !err.message?.includes('status')) {
-        // If it's a real business error (e.g. 400 Bad Request, 409 Conflict), rethrow immediately
+      if (err.status || (err.name !== 'TypeError' && !err.message?.includes('Failed to fetch') && !err.message?.includes('NetworkError'))) {
+        // Real server error / business logic error (400, 401, 403, 409, 500), rethrow immediately!
         throw err;
       }
     }
@@ -192,28 +195,30 @@ export const api = {
   getTeachers: async () => {
     try {
       const res = await fetchWithAuth('/teachers');
-      if (res && res.success && Array.isArray(res.teachers) && res.teachers.length > 0) {
-        return res;
+      const list = res?.users || res?.teachers || [];
+      if (res && res.success && Array.isArray(list) && list.length > 0) {
+        return { success: true, count: list.length, users: list, teachers: list };
       }
       const teachers = generateFallbackTeachers();
-      return { success: true, count: teachers.length, teachers };
+      return { success: true, count: teachers.length, users: teachers, teachers };
     } catch (err) {
       const teachers = generateFallbackTeachers();
-      return { success: true, count: teachers.length, teachers };
+      return { success: true, count: teachers.length, users: teachers, teachers };
     }
   },
 
   getOnlineTeachers: async () => {
     try {
       const res = await fetchWithAuth('/teachers');
-      if (res && res.success && Array.isArray(res.teachers) && res.teachers.length > 0) {
-        return res;
+      const list = res?.users || res?.teachers || [];
+      if (res && res.success && Array.isArray(list) && list.length > 0) {
+        return { success: true, count: list.length, users: list, teachers: list };
       }
       const teachers = generateFallbackTeachers();
-      return { success: true, teachers };
+      return { success: true, count: teachers.length, users: teachers, teachers };
     } catch (err) {
       const teachers = generateFallbackTeachers();
-      return { success: true, teachers };
+      return { success: true, count: teachers.length, users: teachers, teachers };
     }
   },
 

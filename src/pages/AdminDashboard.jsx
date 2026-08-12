@@ -87,10 +87,11 @@ export function AdminDashboard({ activeTab = 'teachers', setToast }) {
         api.getAllEnrollments()
       ]);
 
-      setStats(statsRes.stats || null);
-      setUsers(usersRes.users || []);
-      setTeachers(teachersRes.users || []);
-      setCourses(coursesRes.courses || []);
+      setStats(statsRes?.stats || null);
+      setUsers(usersRes?.users || []);
+      const teacherList = teachersRes?.users || teachersRes?.teachers || [];
+      setTeachers(teacherList);
+      setCourses(coursesRes?.courses || []);
       setClasses(classesRes.classes || []);
       setNotes(notesRes.notes || []);
       setVideos(videosRes.videos || []);

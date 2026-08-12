@@ -7,7 +7,7 @@ const router = express.Router();
 router.get('/', async (req, res) => {
   try {
     const teachers = await User.find({ role: 'teacher', status: 'active' }).select('-password').lean();
-    return res.status(200).json({ success: true, count: teachers.length, users: teachers });
+    return res.status(200).json({ success: true, count: teachers.length, users: teachers, teachers });
   } catch (error) {
     return res.status(500).json({ success: false, message: 'Failed to fetch teachers', error: error.message });
   }
