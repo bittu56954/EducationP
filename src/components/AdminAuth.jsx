@@ -117,6 +117,46 @@ export function AdminAuth({ onSuccess, onSwitchToUserAuth }) {
         Administrator Login
       </div>
 
+      {/* Official Fixed Administrator Credentials Card */}
+      <div style={{
+        backgroundColor: 'rgba(59, 130, 246, 0.08)',
+        border: '1px dashed rgba(59, 130, 246, 0.35)',
+        borderRadius: 'var(--radius-sm)',
+        padding: '0.85rem 1rem',
+        marginBottom: '1.25rem',
+        fontSize: '0.82rem',
+        color: 'var(--text-muted)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
+          <span style={{ fontWeight: 800, color: '#3b82f6', fontSize: '0.85rem' }}>
+            🔑 Fixed Administrator Credentials:
+          </span>
+          <button
+            type="button"
+            onClick={() => {
+              setFormData({ email: 'admin@bkteachingcenter.com', password: 'AdminPassword2026!' });
+              setFieldErrors({});
+            }}
+            style={{
+              background: 'rgba(59, 130, 246, 0.2)',
+              border: '1px solid #3b82f6',
+              color: '#60a5fa',
+              borderRadius: '4px',
+              padding: '0.2rem 0.55rem',
+              fontSize: '0.74rem',
+              fontWeight: 700,
+              cursor: 'pointer'
+            }}
+          >
+            ⚡ Auto-Fill
+          </button>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.8rem' }}>
+          <div><strong>User ID / Email:</strong> <code style={{ color: '#f59e0b', backgroundColor: 'rgba(0,0,0,0.2)', padding: '0.1rem 0.35rem', borderRadius: '3px' }}>admin@bkteachingcenter.com</code></div>
+          <div><strong>Password:</strong> <code style={{ color: '#f59e0b', backgroundColor: 'rgba(0,0,0,0.2)', padding: '0.1rem 0.35rem', borderRadius: '3px' }}>AdminPassword2026!</code></div>
+        </div>
+      </div>
+
       {error && (
         <div style={{
           backgroundColor: 'rgba(239, 68, 68, 0.15)',
