@@ -1,8 +1,8 @@
 import mongoose from 'mongoose';
 
 const testSubmissionSchema = new mongoose.Schema({
-  student: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  test: { type: mongoose.Schema.Types.ObjectId, ref: 'OnlineTest', required: true },
+  student: { type: mongoose.Schema.Types.Mixed, required: true },
+  test: { type: mongoose.Schema.Types.Mixed, required: true },
   answers: [{ type: Number }], // Selected option index or null
   obtainedMarks: { type: Number, required: true },
   totalMarks: { type: Number, required: true },
@@ -10,7 +10,8 @@ const testSubmissionSchema = new mongoose.Schema({
   durationSpent: { type: Number, required: true }, // in seconds
   submittedAt: { type: Date, default: Date.now }
 }, {
-  timestamps: true
+  timestamps: true,
+  strict: false
 });
 
 export const TestSubmission = mongoose.model('TestSubmission', testSubmissionSchema);

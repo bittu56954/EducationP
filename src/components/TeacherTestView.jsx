@@ -179,15 +179,8 @@ export function TeacherTestView({ user, setToast }) {
   const handleSaveTest = async (e) => {
     e.preventDefault();
 
-    if (!form.title.trim()) {
-      if (setToast) setToast({ message: 'Please provide a test title', type: 'danger' });
-      return;
-    }
-
-    if (!form.courseId) {
-      if (setToast) setToast({ message: 'Please select a target course for the test', type: 'danger' });
-      return;
-    }
+    const targetTitle = form.title.trim() || `${form.subject || 'Course'} Weekly Assessment`;
+    const targetCourseId = form.courseId || courses[0]?._id || 'crs_1';
 
     // Validate questions
     for (let i = 0; i < form.questions.length; i++) {
@@ -197,7 +190,7 @@ export function TeacherTestView({ user, setToast }) {
         return;
       }
       for (let j = 0; j < 4; j++) {
-        if (!q.options[j].trim()) {
+        if (!q.options[j] || !q.options[j].trim()) {
           if (setToast) setToast({ message: `Option ${String.fromCharCode(65 + j)} for Question ${i + 1} is empty`, type: 'danger' });
           return;
         }
@@ -205,12 +198,12 @@ export function TeacherTestView({ user, setToast }) {
     }
 
     const payload = {
-      title: form.title,
-      subject: form.subject,
-      course: form.courseId,
-      courseId: form.courseId,
-      duration: Number(form.duration),
-      scheduledAt: new Date(form.scheduledAt).toISOString(),
+      title: targetTitle,
+      subject: form.subject || 'Web Development',
+      course: targetCourseId,
+      courseId: targetCourseId,
+      duration: Number(form.duration) || 15,
+      scheduledAt: form.scheduledAt ? new Date(form.scheduledAt).toISOString() : new Date().toISOString(),
       totalMarks: calculateTotalMarks(form.questions),
       questions: form.questions
     };
@@ -647,11 +640,10 @@ export function TeacherTestView({ user, setToast }) {
       >
         <form onSubmit={handleSaveTest} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', maxHeight: '75vh', overflowY: 'auto', paddingRight: '0.5rem' }}>
           <div>
-            <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.35rem' }}>Test Title *</label>
+            <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.35rem' }}>Test Title (Optional)</label>
             <input 
               type="text" 
-              required 
-              placeholder="e.g. JavaScript Arrays & Loops Weekly Exam"
+              placeholder="e.g. JavaScript Arrays & Loops Weekly Exam (Auto-generated if blank)"
               value={form.title}
               onChange={e => setForm({ ...form, title: e.target.value })}
             />

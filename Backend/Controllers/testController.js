@@ -5,27 +5,32 @@ import { Enrollment } from '../Model/Enrollment.js';
 // Create a new weekly test (Teachers & Admins only)
 export async function createTest(req, res) {
   try {
-    const { title, subject, course, totalMarks, duration, scheduledAt, questions } = req.body;
+    const { title, subject, course, courseId, totalMarks, duration, scheduledAt, questions } = req.body;
 
-    if (!title || !subject || !course || !totalMarks || !duration || !scheduledAt || !questions || questions.length === 0) {
-      return res.status(400).json({ success: false, message: 'All fields and at least one question are required' });
+    const targetCourse = course || courseId;
+    const targetTitle = (title || '').trim() || `${subject || 'Course'} Weekly Assessment`;
+
+    if (!subject || !targetCourse || !duration || !scheduledAt || !questions || !Array.isArray(questions) || questions.length === 0) {
+      return res.status(400).json({ success: false, message: 'Subject, target course, duration, scheduled date, and at least one question are required' });
     }
 
+    const calculatedTotalMarks = totalMarks || questions.reduce((sum, q) => sum + (Number(q.marks) || 1), 0);
+
     const test = new OnlineTest({
-      title,
-      subject,
-      course,
-      teacher: req.user._id,
-      totalMarks,
-      duration,
-      scheduledAt,
+      title: targetTitle,
+      subject: subject.trim(),
+      course: targetCourse,
+      teacher: req.user?._id || 'admin_official_bktc',
+      totalMarks: calculatedTotalMarks,
+      duration: Number(duration) || 15,
+      scheduledAt: new Date(scheduledAt),
       questions
     });
 
     await test.save();
     return res.status(200).json({ success: true, message: 'Weekly test created and scheduled successfully', test });
   } catch (error) {
-    return res.status(500).json({ success: false, message: 'Failed to create test', error: error.message });
+    return res.status(500).json({ success: false, message: error.message || 'Failed to create test', error: error.message });
   }
 }
 
